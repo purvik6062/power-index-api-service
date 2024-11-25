@@ -287,7 +287,16 @@ export async function POST(request: NextRequest) {
 
   let client;
   try {
-    const percentages = (await request.json()) as CouncilPercentages;
+    // const percentages = (await request.json()) as CouncilPercentages;
+    const percentages = {
+      "Token House": 32.33,
+      "Citizen House": 34.59,
+      "Grants Council": 10.15,
+      "Grants Council (Milestone & Metrics Sub-committee)": 2.82,
+      "Security Council": 12.78,
+      "Code of Conduct Council": 4.32,
+      "Developer Advisory Board": 3.01,
+    } as CouncilPercentages;
     client = await connectDB();
     const db = client.db();
 
