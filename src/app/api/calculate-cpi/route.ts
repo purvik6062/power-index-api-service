@@ -277,7 +277,7 @@ async function getDelegateDataForDate(db: any, date: Date) {
   return data;
 }
 
-export async function POST(request: NextRequest) {
+export async function GET(request: NextRequest) {
   const keyData = await apiKeyMiddleware(request);
   console.log("keyData::::---", keyData);
   // If middleware returned a response, it means there was an error
