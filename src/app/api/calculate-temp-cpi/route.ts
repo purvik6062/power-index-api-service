@@ -17,103 +17,144 @@ interface DateRange {
   HCC: Set<string>;
 }
 
+
 const dateRanges: DateRange[] = [
-  {
-    start_date: "2022-05-26",
-    end_date: "2023-01-25",
-    HCC: new Set(["th_vp", "ch_vp_r2"]),
-  },
-  {
-    start_date: "2023-01-26",
-    end_date: "2023-06-07",
-    HCC: new Set(["th_vp", "ch_vp_r2", "gc_vp_s3"]),
-  },
-  {
-    start_date: "2023-06-08",
-    end_date: "2023-10-13",
-    HCC: new Set(["th_vp", "ch_vp_r2", "gc_vp_s4"]),
-  },
-  {
-    start_date: "2023-10-14",
-    end_date: "2024-01-03",
-    HCC: new Set(["th_vp", "ch_vp_r3", "gc_vp_s4"]),
-  },
-  {
-    start_date: "2024-01-04",
-    end_date: "2024-06-02",
-    HCC: new Set([
-      "th_vp",
-      "ch_vp_r3",
-      "gc_vp_s5",
-      "gc_vp_mm_s5",
-      "sc_vp_s5",
-      "coc_vp_s5",
-      "dab_vp_s5",
-    ]),
-  },
-  {
-    start_date: "2024-06-03",
-    end_date: "2024-06-26",
-    HCC: new Set([
-      "th_vp",
-      "ch_vp_r4",
-      "gc_vp_s5",
-      "gc_vp_mm_s5",
-      "sc_vp_s5",
-      "coc_vp_s5",
-      "dab_vp_s5",
-    ]),
-  },
-  {
-    start_date: "2024-06-27",
-    end_date: "2024-12-11",
-    HCC: new Set([
-      "th_vp",
-      "ch_vp_r4",
-      "gc_vp_s6",
-      "gc_vp_mm_s6",
-      "sc_vp_s6",
-      "coc_vp_s6",
-      "dab_vp_s6",
-    ]),
-  },
-];
-
-interface CouncilMapping {
-  displayName: string;
-  keys: string[];
-}
-
-const councilMappings: CouncilMapping[] = [
-  {
-    displayName: "Token House",
-    keys: ["th_vp"],
-  },
-  {
-    displayName: "Citizen House",
-    keys: ["ch_vp_r2", "ch_vp_r3", "ch_vp_r4"],
-  },
-  {
-    displayName: "Grants Council",
-    keys: ["gc_vp_s3", "gc_vp_s4", "gc_vp_s5", "gc_vp_s6"],
-  },
-  {
-    displayName: "Grants Council (Milestone & Metrics Sub-committee)",
-    keys: ["gc_vp_mm_s5", "gc_vp_mm_s6"],
-  },
-  {
-    displayName: "Security Council",
-    keys: ["sc_vp_s5", "sc_vp_s6"],
-  },
-  {
-    displayName: "Code of Conduct Council",
-    keys: ["coc_vp_s5", "coc_vp_s6"],
-  },
-  {
-    displayName: "Developer Advisory Board",
-    keys: ["dab_vp_s5", "dab_vp_s6"],
-  },
-];
+    {
+      start_date: "2022-05-26",
+      end_date: "2023-01-25",
+      HCC: new Set(["th_vp", "ch_vp_r2"]),
+    },
+    {
+      start_date: "2023-01-26",
+      end_date: "2023-03-30",
+      HCC: new Set(["th_vp", "ch_vp_r2", "gc_vp_s3"]),
+    },
+    {
+      start_date: "2023-03-31",
+      end_date: "2023-06-07",
+      HCC: new Set(["th_vp", "ch_vp_r3", "gc_vp_s3"]),
+    },
+    {
+      start_date: "2023-06-08",
+      end_date: "2024-01-03",
+      HCC: new Set(["th_vp", "ch_vp_r3", "gc_vp_s4"]),
+    },
+    {
+      start_date: "2024-01-04",
+      end_date: "2024-01-11",
+      HCC: new Set([
+        "th_vp",
+        "ch_vp_r3",
+        "gc_vp_s5",
+        "gc_vp_mm_s5",
+        "sc_vp_s5",
+        "coc_vp_s5",
+        "dab_vp_s5",
+      ]),
+    },
+    {
+      start_date: "2024-01-12",
+      end_date: "2024-06-26",
+      HCC: new Set([
+        "th_vp",
+        "ch_vp_r4",
+        "gc_vp_s5",
+        "gc_vp_mm_s5",
+        "sc_vp_s5",
+        "coc_vp_s5",
+        "dab_vp_s5",
+      ]),
+    },
+    {
+      start_date: "2024-06-27",
+      end_date: "2024-07-16",
+      HCC: new Set([
+        "th_vp",
+        "ch_vp_r4",
+        "gc_vp_s6",
+        "gc_vp_mm_s6",
+        "sc_vp_s6",
+        "coc_vp_s6",
+        "dab_vp_s6",
+      ]),
+    },
+    {
+      start_date: "2024-07-17",
+      end_date: "2024-10-21",
+      HCC: new Set([
+        "th_vp",
+        "ch_vp_r5",
+        "gc_vp_s6",
+        "gc_vp_mm_s6",
+        "sc_vp_s6",
+        "coc_vp_s6",
+        "dab_vp_s6",
+      ]),
+    },
+    {
+      start_date: "2024-10-22",
+      end_date: "2024-12-02",
+      HCC: new Set([
+        "th_vp",
+        "ch_vp_r6",
+        "gc_vp_s6",
+        "gc_vp_mm_s6",
+        "sc_vp_s6",
+        "coc_vp_s6",
+        "dab_vp_s6",
+      ]),
+    },
+    {
+      start_date: "2024-12-03",
+      end_date: "2024-12-11",
+      HCC: new Set([
+        "th_vp",
+        "ch_vp_r6",
+        "gc_vp_s6",
+        "gc_vp_mm_s6",
+        "sc_vp_s6",
+        "coc_vp_s6",
+        "dab_vp_s6",
+      ]),
+    },
+  ];
+  
+  interface CouncilMapping {
+    displayName: string;
+    keys: string[];
+  }
+  
+  const councilMappings: CouncilMapping[] = [
+    {
+      displayName: "Token House",
+      keys: ["th_vp"],
+    },
+    {
+      displayName: "Citizen House",
+      keys: ["ch_vp_r2", "ch_vp_r3", "ch_vp_r4", "ch_vp_r5", "ch_vp_r6"],
+    },
+    {
+      displayName: "Grants Council",
+      keys: ["gc_vp_s3", "gc_vp_s4", "gc_vp_s5", "gc_vp_s6"],
+    },
+    {
+      displayName: "Grants Council (Milestone & Metrics Sub-committee)",
+      keys: ["gc_vp_mm_s5", "gc_vp_mm_s6"],
+    },
+    {
+      displayName: "Security Council",
+      keys: ["sc_vp_s5", "sc_vp_s6"],
+    },
+    {
+      displayName: "Code of Conduct Council",
+      keys: ["coc_vp_s5", "coc_vp_s6"],
+    },
+    {
+      displayName: "Developer Advisory Board",
+      keys: ["dab_vp_s5", "dab_vp_s6"],
+    },
+  ];
+  
 
 let cachedClient: any = null;
 let cachedDb: any = null;
