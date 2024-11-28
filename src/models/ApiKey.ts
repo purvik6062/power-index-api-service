@@ -70,7 +70,7 @@ export const API_KEY_CONSTANTS = {
   DEFAULT_RATE_LIMIT: 5,
   MIN_RATE_LIMIT: 1,
   MAX_RATE_LIMIT: 1000,
-  KEY_PREFIX: "ak_",
+  KEY_PREFIX: "cpi_",
 } as const;
 
 // Types for API Key operations
