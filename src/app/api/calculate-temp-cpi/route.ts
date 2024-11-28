@@ -2,6 +2,7 @@ import { connectDB } from "@/lib/db/cpimongo";
 import { apiKeyMiddleware } from "@/middleware/apiKeymiddleware";
 import { NextRequest, NextResponse } from "next/server";
 import { cacheExchange, createClient, fetchExchange, gql } from "urql";
+import { ethers } from "ethers";
 
 type CouncilPercentages = Record<string, number>;
 interface CouncilPercentage {
@@ -153,6 +154,49 @@ const councilMappings: CouncilMapping[] = [
     keys: ["dab_vp_s5", "dab_vp_s6"],
   },
 ];
+
+async function getTokenBalance(
+  tokenContractAddress: string,
+  walletAddress: string,
+  rpcUrl: string
+) {
+  // Create a provider for Optimism network
+  // In v6, the provider creation is slightly different
+  const provider = new ethers.JsonRpcProvider(rpcUrl);
+
+  // Minimal ABI for balanceOf function
+  const minimalABI = [
+    {
+      inputs: [{ internalType: "address", name: "account", type: "address" }],
+      name: "balanceOf",
+      outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+      stateMutability: "view",
+      type: "function",
+    },
+  ];
+
+  try {
+    // Create contract instance
+    // In v6, contract instantiation is more straightforward
+    const tokenContract = new ethers.Contract(
+      tokenContractAddress,
+      minimalABI,
+      provider
+    );
+
+    // Call balanceOf function
+    // Slight syntax change in v6
+    const balance = await tokenContract.balanceOf(walletAddress);
+
+    // Format balance (similar to v5, but with slightly different syntax)
+    const formattedBalance = ethers.formatUnits(balance, 18);
+
+    return formattedBalance;
+  } catch (error) {
+    console.error("Error fetching token balance:", error);
+    throw error;
+  }
+}
 
 let cachedClient: any = null;
 let cachedDb: any = null;
@@ -381,6 +425,22 @@ export async function GET(request: NextRequest) {
       { status: 400 }
     );
   }
+
+  const OPTIMISM_RPC = process.env.JSON_RPC_URL!;
+  const OP_TOKEN_ADDRESS = "0x4200000000000000000000000000000000000042";
+  const walletAddress = delegatorAddress;
+  let balance;
+  try {
+    balance = await getTokenBalance(
+      OP_TOKEN_ADDRESS,
+      walletAddress,
+      OPTIMISM_RPC
+    );
+    console.log("Token Balance:", balance);
+  } catch (error) {
+    console.error("Failed to fetch balance:", error);
+  }
+
   const data = await op_client.query(DELEGATE_CHANGED_QUERY, {
     delegator: delegatorAddress,
   });
@@ -388,7 +448,7 @@ export async function GET(request: NextRequest) {
   const fromAddress = data.data.delegateChangeds[0]?.toDelegate;
 
   // console.log('fromAddress:',fromAddress);
-  const addresses = [delegatorAddress, fromAddress, toAddress];
+  const addresses = [fromAddress, toAddress];
   let votingPowersGlobal: any[] = []; // Declare a variable outside the function
 
   await fetchVotingPower(addresses).then((votingPowers) => {
@@ -397,7 +457,9 @@ export async function GET(request: NextRequest) {
     ); // Assign the result to the global variable
     console.log("Voting Powers:", votingPowers);
   });
+  votingPowersGlobal = [...votingPowersGlobal, balance];
 
+  console.log("votingPowersGlobal::::", votingPowersGlobal);
   let client;
   try {
     const percentages = {
@@ -429,13 +491,13 @@ export async function GET(request: NextRequest) {
           {
             address: fromAddress.toLowerCase(), // From address
             newVotingPower: (
-              Number(votingPowersGlobal[1]) - Number(votingPowersGlobal[0])
+              Number(votingPowersGlobal[0]) - Number(votingPowersGlobal[2])
             ).toString(), // New voting power
           },
           {
             address: toAddress.toLowerCase(), // To address (delegate recipient)
             newVotingPower: (
-              Number(votingPowersGlobal[2]) + Number(votingPowersGlobal[0])
+              Number(votingPowersGlobal[1]) + Number(votingPowersGlobal[2])
             ).toString(), // New voting power
           },
         ];
@@ -461,7 +523,7 @@ export async function GET(request: NextRequest) {
         //   console.log('data:', data);
         // Recalculate total voting power after updates
         const totalVotingPower = data.reduce((sum: number, delegate: any) => {
-          console.log("delegate:", delegate);
+          // console.log("delegate:", delegate);
           const votingPower = Number(delegate.voting_power.vp);
           return sum + (isNaN(votingPower) ? 0 : votingPower);
         }, 0);
@@ -474,8 +536,7 @@ export async function GET(request: NextRequest) {
             th_vp: (delegate.voting_power.vp * 100) / totalVotingPower, // Calculate th_vp
           },
         }));
-
-        //   console.log('updatedData:', updatedData);
+        // console.log('updatedData:', updatedData);
         if (updatedData.length === 0) {
           console.warn(`No data found for date: ${date}`);
           return null;
