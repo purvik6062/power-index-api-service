@@ -4,26 +4,34 @@ import React, { useState } from "react";
 const GenerateAPI = () => {
   const [apiKey, setApiKey] = useState("");
   const [copiedMessage, setCopiedMessage] = useState("");
+  const [generatingApiKey, setGeneratingApiKey] = useState(false);
 
   const generateAPIKey = async () => {
-    const myHeaders = new Headers();
-    myHeaders.append("Content-Type", "application/json");
+    try {
+      setGeneratingApiKey(true);
+      const myHeaders = new Headers();
+      myHeaders.append("Content-Type", "application/json");
 
-    const raw = JSON.stringify({
-      owner: "testing",
-      rateLimit: 20,
-    });
+      const raw = JSON.stringify({
+        owner: "testing",
+        rateLimit: 20,
+      });
 
-    const requestOptions: any = {
-      method: "POST",
-      headers: myHeaders,
-      body: raw,
-      redirect: "follow",
-    };
-    const response = await fetch("/api/admin/api-keys", requestOptions);
-    const newApiKey = await response.json();
-    console.log("newApiKey", newApiKey);
-    setApiKey(newApiKey.key);
+      const requestOptions: any = {
+        method: "POST",
+        headers: myHeaders,
+        body: raw,
+        redirect: "follow",
+      };
+      const response = await fetch("/api/admin/api-keys", requestOptions);
+      const newApiKey = await response.json();
+      console.log("newApiKey", newApiKey);
+      setApiKey(newApiKey.key);
+      setGeneratingApiKey(false);
+    } catch (error) {
+      setGeneratingApiKey(false);
+      console.log("Error:", error);
+    }
   };
 
   // Copy API key to clipboard
@@ -87,8 +95,11 @@ const GenerateAPI = () => {
           <div className="p-6">
             <div className="space-y-4">
               <button
+                disabled={generatingApiKey}
                 onClick={() => generateAPIKey()}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors flex items-center justify-center"
+                className={`w-full px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors flex items-center justify-center ${
+                  generatingApiKey ? "cursor-not-allowed" : "cursor-pointer"
+                }`}
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
