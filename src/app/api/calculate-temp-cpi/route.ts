@@ -446,7 +446,9 @@ export async function GET(request: NextRequest) {
   });
   //   console.log('data:',data);
   const fromAddress = data.data.delegateChangeds[0]?.toDelegate;
-
+  if (!fromAddress) {
+    console.log("fromAddress not found");
+  }
   // console.log('fromAddress:',fromAddress);
   const addresses = [fromAddress, toAddress];
   let votingPowersGlobal: any[] = []; // Declare a variable outside the function
@@ -489,7 +491,7 @@ export async function GET(request: NextRequest) {
 
         const addressesToUpdate = [
           {
-            address: fromAddress.toLowerCase(), // From address
+            address: fromAddress?.toLowerCase(), // From address
             newVotingPower: (
               Number(votingPowersGlobal[0]) - Number(votingPowersGlobal[2])
             ).toString(), // New voting power
@@ -505,7 +507,7 @@ export async function GET(request: NextRequest) {
         data = data.map((delegate: any) => {
           const updateMatch = addressesToUpdate.find(
             (update) =>
-              update.address.toLowerCase() ===
+              update?.address?.toLowerCase() ===
               delegate.delegate_id.toLowerCase()
           );
           // console.log('updateMatch:', updateMatch);
