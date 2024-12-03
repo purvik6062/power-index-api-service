@@ -564,6 +564,23 @@ export async function GET(request: NextRequest) {
           }
           return delegate;
         });
+                // Add missing addresses from addressesToUpdate
+                addressesToUpdate.forEach((addressToUpdate) => {
+                  const exists = data.some(
+                    (delegate:any) => 
+                      delegate.delegate_id.toLowerCase() === addressToUpdate.address.toLowerCase()
+                  );
+      
+                  if (!exists) {
+                    data.push({
+                      delegate_id: addressToUpdate.address,
+                      voting_power: {
+                        vp: addressToUpdate.newVotingPower,
+                        th_vp: "0", // Default value for threshold voting power
+                      }
+                    });
+                  }
+                });
         //   console.log('data:', data);
         // Recalculate total voting power after updates
         const totalVotingPower = data.reduce((sum: number, delegate: any) => {
