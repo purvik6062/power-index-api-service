@@ -566,6 +566,7 @@ export async function GET(request: NextRequest) {
         });
                 // Add missing addresses from addressesToUpdate
                 addressesToUpdate.forEach((addressToUpdate) => {
+                  if (!addressToUpdate.address) return; // Skip if address is undefined
                   const exists = data.some(
                     (delegate:any) => 
                       delegate.delegate_id.toLowerCase() === addressToUpdate.address.toLowerCase()
