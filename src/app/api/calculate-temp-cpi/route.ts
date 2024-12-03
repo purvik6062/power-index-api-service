@@ -3,6 +3,9 @@ import { apiKeyMiddleware } from "@/middleware/apiKeymiddleware";
 import { NextRequest, NextResponse } from "next/server";
 import { cacheExchange, createClient, fetchExchange, gql } from "urql";
 import { ethers } from "ethers";
+import { Parser } from "json2csv";
+import * as fs from "fs";
+import * as path from "path";
 
 type CouncilPercentages = Record<string, number>;
 interface CouncilPercentage {
@@ -141,6 +144,50 @@ const councilMappings: CouncilMapping[] = [
     keys: ["dab_vp_s5", "dab_vp_s6"],
   },
 ];
+
+async function exportDataToCsv(data: any[], updatedData: any[], date: string) {
+  try {
+    // Create a directory to store CSV files if it doesn't exist
+    const csvDir = path.join(process.cwd(), "delegate-data-csvs");
+    if (!fs.existsSync(csvDir)) {
+      fs.mkdirSync(csvDir, { recursive: true });
+    }
+
+    // Define fields to include in the CSV
+    const fields = [
+      "delegate_id",
+      "voting_power.vp",
+      "voting_power.th_vp",
+      "voting_power.ch_vp_r6",
+      "voting_power.gc_vp_s6",
+      "voting_power.gc_vp_mm_s6",
+      "voting_power.ch_member_r6",
+      "voting_power.gc_member_s6",
+      "voting_power.coc_member_s6",
+      "voting_power.coc_vp_s6",
+      "voting_power.dab_member_s6",
+      "voting_power.dab_vp_s6",
+      "voting_power.sc_vp_s6",
+    ];
+
+    // Create CSV parser
+    const parser = new Parser({ fields });
+
+    // Export original data
+    const originalCsvData = parser.parse(data);
+    const originalCsvPath = path.join(csvDir, `original_data_${date}.csv`);
+    fs.writeFileSync(originalCsvPath, originalCsvData);
+
+    // Export updated data
+    const updatedCsvData = parser.parse(updatedData);
+    const updatedCsvPath = path.join(csvDir, `updated_data_${date}.csv`);
+    fs.writeFileSync(updatedCsvPath, updatedCsvData);
+
+    console.log(`CSV files exported for date: ${date}`);
+  } catch (error) {
+    console.error(`Error exporting CSV for date ${date}:`, error);
+  }
+}
 
 async function getTokenBalance(
   tokenContractAddress: string,
@@ -490,6 +537,9 @@ export async function GET(request: NextRequest) {
             ).toString(), // New voting power
           },
         ];
+
+        const originalData = [...data];
+
         // Update voting power for specific addresses
         data = data.map((delegate: any) => {
           const updateMatch = addressesToUpdate.find(
@@ -503,7 +553,7 @@ export async function GET(request: NextRequest) {
               ...delegate,
               voting_power: {
                 vp: updateMatch.newVotingPower,
-                ...delegate.th_vp,
+                ...delegate.voting_power,
               },
             };
           }
@@ -554,7 +604,7 @@ export async function GET(request: NextRequest) {
         );
 
         const dateString = new Date(date).toISOString().split("T")[0];
-
+        // await exportDataToCsv(originalData, updatedData, dateString);
         return {
           date: dateString,
           cpi,
