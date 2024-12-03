@@ -526,9 +526,11 @@ export async function GET(request: NextRequest) {
         const addressesToUpdate = [
           {
             address: fromAddress?.toLowerCase(), // From address
-            newVotingPower: (
-              Number(votingPowersGlobal[0]) - Number(votingPowersGlobal[2])
-            ).toString(), // New voting power
+            newVotingPower: fromAddress
+              ? (
+                  Number(votingPowersGlobal[0]) - Number(votingPowersGlobal[2])
+                ).toString()
+              : "0", // New voting power
           },
           {
             address: toAddress.toLowerCase(), // To address (delegate recipient)
@@ -537,7 +539,7 @@ export async function GET(request: NextRequest) {
             ).toString(), // New voting power
           },
         ];
-
+        console.log("addressesToUpdate", addressesToUpdate);
         const originalData = [...data];
 
         // Update voting power for specific addresses
@@ -549,11 +551,14 @@ export async function GET(request: NextRequest) {
           );
           // console.log('updateMatch:', updateMatch);
           if (updateMatch) {
+            console.log("updateMatch", updateMatch);
+            console.log("delegate", delegate);
             return {
               ...delegate,
               voting_power: {
-                vp: updateMatch.newVotingPower,
                 ...delegate.voting_power,
+                vp: updateMatch.newVotingPower,
+                th_vp: delegate.voting_power.th_vp,
               },
             };
           }
@@ -604,7 +609,7 @@ export async function GET(request: NextRequest) {
         );
 
         const dateString = new Date(date).toISOString().split("T")[0];
-        // await exportDataToCsv(originalData, updatedData, dateString);
+        await exportDataToCsv(originalData, updatedData, dateString);
         return {
           date: dateString,
           cpi,
