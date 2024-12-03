@@ -93,20 +93,7 @@ const dateRanges: DateRange[] = [
   },
   {
     start_date: "2024-10-22",
-    end_date: "2024-12-02",
-    HCC: new Set([
-      "th_vp",
-      "ch_vp_r6",
-      "gc_vp_s6",
-      "gc_vp_mm_s6",
-      "sc_vp_s6",
-      "coc_vp_s6",
-      "dab_vp_s6",
-    ]),
-  },
-  {
-    start_date: "2024-12-03",
-    end_date: "2024-12-11",
+    end_date: "2024-12-31",
     HCC: new Set([
       "th_vp",
       "ch_vp_r6",
