@@ -73,7 +73,7 @@ const GenerateAPI = () => {
         },
       ],
       exampleUrl:
-        "https://power-index-api.vercel.app/api/calculate-temp-cpi?delegatorAddress=0x48a63097e1ac123b1f5a8bbffafa4afa8192fab0&toAddress=0x0374f0273e01841f594a4c0becdf7bfbd9b13a42",
+        "https://api.daocpi.com/api/calculate-temp-cpi?delegatorAddress={{delegatorAddress}}&toAddress={{toAddress}}",
       authRequired: true,
       responseExample: {
         cpi: "Number representing the Temperature Compensation Power Index",
