@@ -1,5 +1,7 @@
-import GenerateAPI from "@/components/GenerateAPI";
+"use client";
+
+import APIAndDocumentation from "@/components/APIAndDocumentation";
 
 export default function Home() {
-  return <GenerateAPI />;
+  return <APIAndDocumentation />;
 }
