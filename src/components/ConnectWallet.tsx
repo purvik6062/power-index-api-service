@@ -10,15 +10,21 @@ import {
 } from "react-icons/fi";
 import styles from "@/styles/Navbar.module.css";
 import { usePrivy, useWallets } from "@privy-io/react-auth";
-import { useAccount, useEnsName } from "wagmi";
+import { useAccount, useEnsName, useDisconnect } from "wagmi";
 
-export const ConnectWallet = () => {
+export function ConnectWallet() {
   const { login, authenticated, user, logout } = usePrivy();
   const { wallets } = useWallets();
-  const { address } = useAccount();
+  const { address, isConnected } = useAccount();
+  const { disconnect: wagmiDisconnect } = useDisconnect();
   const { data: ensName } = useEnsName({ address });
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isWalletConnected, setIsWalletConnected] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setIsWalletConnected(authenticated && isConnected);
+  }, [authenticated, isConnected]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -49,12 +55,14 @@ export const ConnectWallet = () => {
 
   const handleLogout = async () => {
     await logout();
+    wagmiDisconnect();
+    setIsWalletConnected(false);
     setIsDropdownOpen(false);
   };
 
   return (
     <div className="relative" ref={dropdownRef}>
-      {!authenticated ? (
+      {!isWalletConnected ? (
         <>
           {/* Large screen button */}
           <button
@@ -123,9 +131,9 @@ export const ConnectWallet = () => {
                 <div className="px-4 py-2 text-sm text-gray-700">
                   <p>Connected as:</p>
                   <p className="font-bold">
-                    {/* {user?.email ||
+                    {user?.google?.email ||
                       ensName ||
-                      (address && truncateAddress(address))} */}
+                      (address && truncateAddress(address))}
                   </p>
                 </div>
                 <button
@@ -149,4 +157,4 @@ export const ConnectWallet = () => {
       )}
     </div>
   );
-};
+}

@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 
-const APIDocumentation = () => {
+function APIDocumentation() {
   // Sample API documentation data
   const apiDocumentation = [
     {
@@ -117,6 +117,6 @@ const APIDocumentation = () => {
       </div>
     </div>
   );
-};
+}
 
 export default APIDocumentation;

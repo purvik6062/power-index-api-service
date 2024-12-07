@@ -1,19 +1,31 @@
 "use client";
-import React, { useState } from "react";
 
-const APIKeyGenerator = () => {
+import { usePrivy } from "@privy-io/react-auth";
+import React, { useState } from "react";
+import { useAccount } from "wagmi";
+
+function APIKeyGenerator() {
   const [apiKey, setApiKey] = useState("");
   const [copiedMessage, setCopiedMessage] = useState("");
   const [generatingApiKey, setGeneratingApiKey] = useState(false);
+  const { ready, authenticated, login, logout, user } = usePrivy();
+  const { isConnected, address, chain } = useAccount();
+  console.log("isConnected", isConnected);
+  console.log("authenticated", authenticated);
 
   const generateAPIKey = async () => {
     try {
+      if (!authenticated) {
+        login();
+        return;
+      }
       setGeneratingApiKey(true);
-      const myHeaders = new Headers();
-      myHeaders.append("Content-Type", "application/json");
+      const myHeaders: HeadersInit = {
+        "Content-Type": "application/json",
+      };
 
       const raw = JSON.stringify({
-        owner: "testing",
+        owner: address,
         rateLimit: 20,
       });
 
@@ -115,6 +127,6 @@ const APIKeyGenerator = () => {
       </div>
     </div>
   );
-};
+}
 
 export default APIKeyGenerator;
