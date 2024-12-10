@@ -1,4 +1,6 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+"use client";
+
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { usePrivy } from "@privy-io/react-auth";
 import { useAccount } from "wagmi";
 
@@ -13,10 +15,14 @@ interface ApiKeyData {
 export function useApiKeyManager() {
   const [apiKeyData, setApiKeyData] = useState<ApiKeyData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const { isConnected, address } = useAccount();
   const { authenticated } = usePrivy();
+
+  const fetchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const hasFetchedRef = useRef(false);
 
   const localStorageManager = useMemo(
     () => ({
@@ -91,7 +97,7 @@ export function useApiKeyManager() {
     }
 
     try {
-      setIsLoading(true);
+      setIsGenerating(true);
       setError(null);
 
       const response = await fetch("/api/admin/api-keys", {
@@ -114,30 +120,47 @@ export function useApiKeyManager() {
       setError(errorMessage);
       return null;
     } finally {
-      setIsLoading(false);
+      setIsGenerating(false);
     }
   }, [isConnected, address, authenticated, localStorageManager]);
 
+  const debouncedFetchApiKey = useCallback(() => {
+    if (fetchTimeoutRef.current) {
+      clearTimeout(fetchTimeoutRef.current);
+    }
+
+    fetchTimeoutRef.current = setTimeout(() => {
+      if (!hasFetchedRef.current) {
+        fetchApiKey();
+        hasFetchedRef.current = true;
+      }
+    }, 500);
+  }, [fetchApiKey]);
+
   useEffect(() => {
     const loadInitialData = async () => {
-      const serverData = await fetchApiKey();
-
-      if (!serverData) {
-        const localStorageData = localStorageManager.get();
-        if (localStorageData) {
-          setApiKeyData(localStorageData);
-        }
+      const localStorageData = localStorageManager.get();
+      if (localStorageData) {
+        setApiKeyData(localStorageData);
       }
+      debouncedFetchApiKey();
     };
 
     loadInitialData();
-  }, [fetchApiKey, localStorageManager]);
+
+    return () => {
+      if (fetchTimeoutRef.current) {
+        clearTimeout(fetchTimeoutRef.current);
+      }
+    };
+  }, [debouncedFetchApiKey, localStorageManager]);
 
   return {
     apiKeyData,
     isLoading,
     error,
-    fetchApiKey,
+    fetchApiKey: debouncedFetchApiKey,
     generateApiKey,
+    isGenerating,
   };
 }

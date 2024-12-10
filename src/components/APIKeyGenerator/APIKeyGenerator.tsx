@@ -4,7 +4,7 @@ import React, { useState, useCallback, useMemo } from "react";
 import { usePrivy } from "@privy-io/react-auth";
 import { useAccount } from "wagmi";
 import { motion, AnimatePresence } from "framer-motion";
-import { Loader2, Copy, CheckCircle, XCircle } from "lucide-react";
+import { Loader2, Copy, CheckCircle, XCircle, Key } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,12 +20,14 @@ import { useApiKeyManager } from "@/models/use-api-key-manager";
 import { useBalance } from "wagmi";
 
 function APIKeyGenerator() {
-  const { apiKeyData, isLoading, error, generateApiKey } = useApiKeyManager();
+  const { apiKeyData, isLoading, error, generateApiKey, isGenerating } =
+    useApiKeyManager();
   const [copiedMessage, setCopiedMessage] = useState("");
   const { ready, authenticated, login } = usePrivy();
   const { isConnected, address } = useAccount();
   const { toast } = useToast();
   const { data: balance } = useBalance({ address });
+
   const copyAPIKey = useCallback(async () => {
     if (apiKeyData?.key) {
       try {
@@ -77,17 +79,25 @@ function APIKeyGenerator() {
         className="space-y-6"
       >
         <Button
-          disabled={isLoading}
+          disabled={isLoading || isGenerating}
           onClick={() => generateApiKey()}
           className="w-full"
         >
           {isLoading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Loading...
+            </>
+          ) : isGenerating ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               Generating...
             </>
           ) : (
-            "Generate New API Key"
+            <>
+              <Key className="mr-2 h-4 w-4" />
+              Generate New API Key
+            </>
           )}
         </Button>
 
@@ -128,20 +138,22 @@ function APIKeyGenerator() {
                 </TooltipProvider>
               </div>
 
-              <dl className="text-sm text-gray-600 space-y-2">
+              <motion.dl
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="grid grid-cols-2 gap-4 text-sm"
+              >
                 <div>
-                  <dt className="inline font-semibold">Created:</dt>{" "}
-                  <dd className="inline">
-                    {new Date(apiKeyData.createdAt).toLocaleString()}
-                  </dd>
+                  <dt className="font-semibold text-gray-600">Created</dt>
+                  <dd>{new Date(apiKeyData.createdAt).toLocaleString()}</dd>
                 </div>
                 <div>
-                  <dt className="inline font-semibold">Rate Limit:</dt>{" "}
-                  <dd className="inline">{apiKeyData.rateLimit} requests</dd>
+                  <dt className="font-semibold text-gray-600">Rate Limit</dt>
+                  <dd>{apiKeyData.rateLimit} requests</dd>
                 </div>
                 <div>
-                  <dt className="inline font-semibold">Status:</dt>{" "}
-                  <dd className="inline">
+                  <dt className="font-semibold text-gray-600">Status</dt>
+                  <dd>
                     <Badge
                       variant={apiKeyData.isActive ? "success" : "destructive"}
                     >
@@ -150,8 +162,8 @@ function APIKeyGenerator() {
                   </dd>
                 </div>
                 {/* <div>
-                  <dt className="inline font-semibold">Balance:</dt>{" "}
-                  <dd className="inline">
+                  <dt className="font-semibold text-gray-600">Balance</dt>
+                  <dd>
                     {balance?.value && balance?.decimals
                       ? (
                           Number(balance.value) / Math.pow(10, balance.decimals)
@@ -163,7 +175,7 @@ function APIKeyGenerator() {
                     {balance?.symbol}
                   </dd>
                 </div> */}
-              </dl>
+              </motion.dl>
             </motion.div>
           )}
         </AnimatePresence>

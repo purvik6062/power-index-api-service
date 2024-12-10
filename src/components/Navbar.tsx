@@ -1,13 +1,18 @@
 "use client";
-import React from "react";
-import { ConnectWallet } from "./ConnectWallet";
+import Link from "next/link";
+import { ConnectWallet } from "./ConnectWallet/ConnectWallet";
+import { ThemeToggle } from "./theme/theme-toggle";
 
-function Navbar() {
+export function Navbar() {
   return (
-    <div className="flex justify-end items-end mt-4 mr-4">
-      <ConnectWallet />
-    </div>
+    <nav className="flex items-center justify-between p-4 bg-background">
+      <Link href="/" className="text-2xl font-bold">
+        Power Index API
+      </Link>
+      <div className="flex items-center space-x-4">
+        <ThemeToggle />
+        <ConnectWallet />
+      </div>
+    </nav>
   );
 }
-
-export default Navbar;
