@@ -50,7 +50,9 @@ function APIAndDocumentation() {
             >
               <h2 className="text-2xl font-semibold mb-4">Quick Start Guide</h2>
               <ol className="list-decimal list-inside space-y-2">
-                <li>Generate an API key in the "API Key Generator" tab</li>
+                <li>
+                  Generate an API key in the &quot;API Key Generator&quot; tab
+                </li>
                 <li>Review the API documentation for available endpoints</li>
                 <li>Make API requests using your generated key</li>
                 <li>Monitor your usage and rate limits</li>
@@ -58,8 +60,8 @@ function APIAndDocumentation() {
               <div className="mt-6">
                 <h3 className="text-xl font-semibold mb-2">Need Help?</h3>
                 <p>
-                  If you have any questions or need assistance, please don't
-                  hesitate to{" "}
+                  If you have any questions or need assistance, please
+                  don&apos;t hesitate to{" "}
                   <a href="#" className="text-primary hover:underline">
                     contact our support team
                   </a>
