@@ -1,132 +1,197 @@
 "use client";
 
+import React, { useState, useCallback, useMemo } from "react";
 import { usePrivy } from "@privy-io/react-auth";
-import React, { useState } from "react";
 import { useAccount } from "wagmi";
+import { motion, AnimatePresence } from "framer-motion";
+import { Loader2, Copy, CheckCircle, XCircle } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Badge } from "@/components/ui/badge";
+import { useApiKeyManager } from "@/models/use-api-key-manager";
+import { useBalance } from "wagmi";
 
 function APIKeyGenerator() {
-  const [apiKey, setApiKey] = useState("");
+  const { apiKeyData, isLoading, error, generateApiKey } = useApiKeyManager();
   const [copiedMessage, setCopiedMessage] = useState("");
-  const [generatingApiKey, setGeneratingApiKey] = useState(false);
-  const { ready, authenticated, login, logout, user } = usePrivy();
-  const { isConnected, address, chain } = useAccount();
-  console.log("isConnected", isConnected);
-  console.log("authenticated", authenticated);
-
-  const generateAPIKey = async () => {
-    try {
-      if (!authenticated) {
-        login();
-        return;
+  const { ready, authenticated, login } = usePrivy();
+  const { isConnected, address } = useAccount();
+  const { toast } = useToast();
+  const { data: balance } = useBalance({ address });
+  const copyAPIKey = useCallback(async () => {
+    if (apiKeyData?.key) {
+      try {
+        await navigator.clipboard.writeText(apiKeyData.key);
+        setCopiedMessage("Copied!");
+        toast({
+          title: "API Key Copied",
+          description: "The API key has been copied to your clipboard.",
+        });
+        setTimeout(() => setCopiedMessage(""), 2000);
+      } catch (err) {
+        console.error("Failed to copy:", err);
+        setCopiedMessage("Copy failed");
+        toast({
+          title: "Copy Failed",
+          description: "Failed to copy the API key. Please try again.",
+          variant: "destructive",
+        });
       }
-      setGeneratingApiKey(true);
-      const myHeaders: HeadersInit = {
-        "Content-Type": "application/json",
-      };
-
-      const raw = JSON.stringify({
-        owner: address,
-        rateLimit: 20,
-      });
-
-      const requestOptions: any = {
-        method: "POST",
-        headers: myHeaders,
-        body: raw,
-        redirect: "follow",
-      };
-      const response = await fetch("/api/admin/api-keys", requestOptions);
-      const newApiKey = await response.json();
-      console.log("newApiKey", newApiKey);
-      setApiKey(newApiKey.key);
-      setGeneratingApiKey(false);
-    } catch (error) {
-      setGeneratingApiKey(false);
-      console.log("Error:", error);
     }
-  };
+  }, [apiKeyData, toast]);
 
-  // Copy API key to clipboard
-  const copyAPIKey = () => {
-    if (apiKey) {
-      navigator.clipboard.writeText(apiKey);
-      setCopiedMessage("Copied!");
-      setTimeout(() => setCopiedMessage(""), 2000);
+  const displayState = useMemo(() => {
+    if (!ready) return "Checking authentication...";
+    if (!isConnected) return "Please connect your wallet";
+    if (!authenticated) return "Please log in";
+    return null;
+  }, [ready, isConnected, authenticated]);
+
+  const renderContent = () => {
+    if (displayState) {
+      return (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          className="text-gray-500 text-center p-4"
+        >
+          {displayState}
+        </motion.div>
+      );
     }
+
+    return (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="space-y-6"
+      >
+        <Button
+          disabled={isLoading}
+          onClick={() => generateApiKey()}
+          className="w-full"
+        >
+          {isLoading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Generating...
+            </>
+          ) : (
+            "Generate New API Key"
+          )}
+        </Button>
+
+        <AnimatePresence>
+          {apiKeyData && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="space-y-4"
+            >
+              <div className="flex items-center space-x-2">
+                <Input
+                  type="text"
+                  value={apiKeyData.key}
+                  readOnly
+                  className="font-mono text-sm"
+                />
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={copyAPIKey}
+                      >
+                        {copiedMessage ? (
+                          <CheckCircle className="h-4 w-4" />
+                        ) : (
+                          <Copy className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{copiedMessage || "Copy to clipboard"}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+
+              <dl className="text-sm text-gray-600 space-y-2">
+                <div>
+                  <dt className="inline font-semibold">Created:</dt>{" "}
+                  <dd className="inline">
+                    {new Date(apiKeyData.createdAt).toLocaleString()}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="inline font-semibold">Rate Limit:</dt>{" "}
+                  <dd className="inline">{apiKeyData.rateLimit} requests</dd>
+                </div>
+                <div>
+                  <dt className="inline font-semibold">Status:</dt>{" "}
+                  <dd className="inline">
+                    <Badge
+                      variant={apiKeyData.isActive ? "success" : "destructive"}
+                    >
+                      {apiKeyData.isActive ? "Active" : "Inactive"}
+                    </Badge>
+                  </dd>
+                </div>
+                {/* <div>
+                  <dt className="inline font-semibold">Balance:</dt>{" "}
+                  <dd className="inline">
+                    {balance?.value && balance?.decimals
+                      ? (
+                          Number(balance.value) / Math.pow(10, balance.decimals)
+                        ).toLocaleString(undefined, {
+                          minimumFractionDigits: balance.decimals,
+                          maximumFractionDigits: balance.decimals,
+                        })
+                      : balance?.value}{" "}
+                    {balance?.symbol}
+                  </dd>
+                </div> */}
+              </dl>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {error && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="text-destructive text-sm flex items-center"
+          >
+            <XCircle className="mr-2 h-4 w-4" /> {error}
+          </motion.div>
+        )}
+      </motion.div>
+    );
   };
 
   return (
-    <div className="bg-white shadow-md rounded-lg overflow-hidden">
-      <div className="px-6 py-4 border-b">
-        <h2 className="text-xl font-semibold text-gray-800">
+    <Card className="w-full max-w-xl mx-auto">
+      <CardHeader>
+        <CardTitle className="text-2xl font-bold text-primary">
           Generate API Key
-        </h2>
-      </div>
-      <div className="p-6">
-        <div className="space-y-4">
-          <button
-            disabled={generatingApiKey}
-            onClick={() => generateAPIKey()}
-            className={`w-full px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors flex items-center justify-center ${
-              generatingApiKey ? "cursor-not-allowed" : "cursor-pointer"
-            }`}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5 mr-2"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-            >
-              <path
-                fillRule="evenodd"
-                d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z"
-                clipRule="evenodd"
-              />
-            </svg>
-            Generate New API Key
-          </button>
-
-          <div className="flex items-center space-x-2">
-            <input
-              type="text"
-              value={
-                apiKey
-                  ? apiKey
-                  : generatingApiKey
-                  ? "Generating..."
-                  : "No API Key Generated"
-              }
-              readOnly
-              className="flex-1 p-2 border rounded bg-gray-100"
-            />
-            <button
-              onClick={copyAPIKey}
-              className="p-2 border rounded hover:bg-gray-50 transition-colors"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path d="M8 2a1 1 0 000 2h2a1 1 0 100-2H8z" />
-                <path d="M3 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v6h-4.586l1.293-1.293a1 1 0 00-1.414-1.414l-3 3a1 1 0 000 1.414l3 3a1 1 0 001.414-1.414L10.414 13H15v3a2 2 0 01-2 2H5a2 2 0 01-2-2V5zM15 11h2a1 1 0 110 2h-2v-2z" />
-              </svg>
-            </button>
-          </div>
-
-          {copiedMessage && (
-            <p className="text-green-600 text-sm">{copiedMessage}</p>
-          )}
-
-          <div className="text-sm text-gray-500">
-            <p>🔒 Keep your API key confidential</p>
-            <p>Generate a new key if compromised</p>
-          </div>
-        </div>
-      </div>
-    </div>
+        </CardTitle>
+      </CardHeader>
+      <CardContent>{renderContent()}</CardContent>
+    </Card>
   );
 }
 
-export default APIKeyGenerator;
+export default React.memo(APIKeyGenerator);

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { BiSolidWallet } from "react-icons/bi";
 import {
   FiArrowUpRight,
@@ -8,29 +9,67 @@ import {
   FiExternalLink,
   FiLogOut,
 } from "react-icons/fi";
-import styles from "@/styles/Navbar.module.css";
 import { usePrivy, useWallets } from "@privy-io/react-auth";
 import { useAccount, useEnsName, useDisconnect } from "wagmi";
+import { CheckIcon } from "lucide-react";
 
 export function ConnectWallet() {
-  const { login, authenticated, user, logout } = usePrivy();
+  const { login, authenticated, user, logout, ready, connectWallet } =
+    usePrivy();
   const { wallets } = useWallets();
   const { address, isConnected } = useAccount();
   const { disconnect: wagmiDisconnect } = useDisconnect();
   const { data: ensName } = useEnsName({ address });
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [isWalletConnected, setIsWalletConnected] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [displayAddress, setDisplayAddress] = useState<
+    string | null | `0x${string}` | undefined
+  >(null);
+  const [copiedAddress, setCopiedAddress] = useState(false);
+  const dropdownRef = useRef<any>(null);
+
+  // console.log("------------");
+  // console.log("isConnected", isConnected);
+  // console.log("authenticated", authenticated);
+  console.log("address", address);
+  // console.log("wallets", wallets);
+  // console.log("ready", ready);
+  // console.log("user", user);
 
   useEffect(() => {
-    setIsWalletConnected(authenticated && isConnected);
-  }, [authenticated, isConnected]);
+    // Check if there's a social login
+    const hasSocialLogin = user?.google || user?.farcaster;
+
+    // If there's a social login, don't modify wallet connection
+    if (hasSocialLogin) {
+      setDisplayAddress(address);
+      return;
+    }
+
+    // Find the first wallet with a matching address from a real wallet provider
+    const realWallet = wallets.find(
+      (wallet) =>
+        wallet.address === address && wallet.walletClientType !== "privy"
+    );
+
+    if (realWallet) {
+      setDisplayAddress(realWallet.address);
+    } else {
+      setDisplayAddress(null);
+      if (
+        !hasSocialLogin &&
+        wallets.every((wallet) => wallet.walletClientType === "privy")
+      ) {
+        wagmiDisconnect();
+        console.log("LOGOUT::::::::::");
+      }
+    }
+  }, [wallets, address, user]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
         dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
+        !dropdownRef?.current?.contains(event.target as Node)
       ) {
         setIsDropdownOpen(false);
       }
@@ -43,117 +82,135 @@ export function ConnectWallet() {
   }, []);
 
   const handleCopyAddress = () => {
-    if (address) {
-      navigator.clipboard.writeText(address);
-      // You might want to add a toast notification here
+    if (displayAddress) {
+      navigator.clipboard.writeText(displayAddress);
+      setCopiedAddress(true);
+      setTimeout(() => setCopiedAddress(false), 2000);
     }
   };
 
-  const truncateAddress = (addr: string) => {
+  const truncateAddress = (addr: any) => {
     return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
+  };
+
+  const handleLogin = async () => {
+    if (!authenticated) {
+      login();
+    } else {
+      if (!user?.google && !user?.farcaster) {
+        connectWallet();
+      }
+    }
   };
 
   const handleLogout = async () => {
     await logout();
-    wagmiDisconnect();
-    setIsWalletConnected(false);
+    if (!user?.google && !user?.farcaster) {
+      wagmiDisconnect();
+      setDisplayAddress(null);
+    }
     setIsDropdownOpen(false);
   };
 
+  const isWalletConnected =
+    user?.google || user?.farcaster || displayAddress !== null;
+
   return (
     <div className="relative" ref={dropdownRef}>
-      {!isWalletConnected ? (
-        <>
-          {/* Large screen button */}
-          <button
-            onClick={login}
-            type="button"
-            className={`hidden lg:flex cursor-pointer xl:w-11 xl:h-11 2xl:w-12 2xl:h-12 2.5xl:w-14 2.5xl:h-14 rounded-full items-center justify-center bg-white w-10 h-10 ${styles.icon3d} ${styles.whiteBg}`}
-          >
-            <BiSolidWallet
-              className={`size-5 text-blue-shade-200 ${styles.iconInner}`}
-            />
-          </button>
-
-          {/* Small screen button */}
-          <div
-            className="block lg:hidden py-4 pl-6 sm:py-5 hover:bg-blue-shade-100 cursor-pointer"
-            onClick={login}
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <BiSolidWallet className="size-5 mr-4" />
-                <span>Connect Wallet</span>
-              </div>
-              <FiArrowUpRight className="w-5 h-5" />
-            </div>
-          </div>
-        </>
+      {!isWalletConnected || !authenticated ? (
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={handleLogin}
+          className="flex items-center justify-center 
+            bg-gradient-to-br from-blue-500 to-[#4e72b1]
+            text-white px-6 py-3 rounded-full 
+            shadow-lg hover:shadow-xl 
+            transition-all duration-300 
+            group relative overflow-hidden"
+        >
+          <BiSolidWallet className="mr-2 size-5 group-hover:rotate-12 transition-transform" />
+          <span className="font-semibold">Connect Wallet</span>
+          <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+        </motion.button>
       ) : (
-        <>
-          {/* Large screen button */}
-          <button
+        <div className="relative">
+          <motion.button
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            type="button"
-            className={`hidden lg:flex cursor-pointer xl:w-auto xl:h-11 2xl:w-auto 2xl:h-12 2.5xl:w-auto 2.5xl:h-14 rounded-full items-center justify-center bg-white px-4 ${styles.icon3d} ${styles.whiteBg}`}
+            className="flex items-center 
+              bg-gradient-to-br from-blue-50 to-blue-100 
+              text-blue-800 px-4 py-2 rounded-full 
+              shadow-md hover:shadow-lg 
+              hover:rounded-full
+              transition-all duration-300 
+              group relative"
           >
-            <BiSolidWallet
-              className={`size-5 text-blue-shade-200 ${styles.iconInner} mr-2`}
-            />
-            <span className="text-blue-shade-200">
-              {ensName || (address && truncateAddress(address))}
+            <BiSolidWallet className="mr-2 size-6 text-blue-600 group-hover:rotate-6 transition-transform" />
+            <span className="font-medium">
+              {displayAddress && truncateAddress(displayAddress)}
             </span>
-          </button>
+            <div className="absolute inset-0 bg-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity hover:rounded-full"></div>
+          </motion.button>
 
-          {/* Small screen button */}
-          <div
-            className="block lg:hidden py-4 pl-6 sm:py-5 hover:bg-blue-shade-100 cursor-pointer"
-            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <BiSolidWallet className="size-5 mr-4" />
-                <span>{ensName || (address && truncateAddress(address))}</span>
-              </div>
-              <FiArrowUpRight className="w-5 h-5" />
-            </div>
-          </div>
-
-          {/* Dropdown menu */}
-          {isDropdownOpen && (
-            <div className="absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
-              <div
-                className="py-1"
-                role="menu"
-                aria-orientation="vertical"
-                aria-labelledby="options-menu"
+          <AnimatePresence>
+            {isDropdownOpen && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="absolute right-0 mt-2 w-64 bg-white 
+                  rounded-xl shadow-2xl ring-2 ring-blue-100 
+                  overflow-hidden z-50"
               >
-                <div className="px-4 py-2 text-sm text-gray-700">
-                  <p>Connected as:</p>
-                  <p className="font-bold">
+                <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-4">
+                  <p className="text-sm text-gray-600">Connected as:</p>
+                  <p className="font-bold text-blue-800 truncate">
                     {user?.google?.email ||
+                      user?.farcaster?.displayName ||
                       ensName ||
-                      (address && truncateAddress(address))}
+                      (displayAddress && truncateAddress(displayAddress))}
                   </p>
                 </div>
-                <button
-                  onClick={handleCopyAddress}
-                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
-                  role="menuitem"
-                >
-                  <FiCopy className="inline mr-2" /> Copy Address
-                </button>
-                <button
-                  onClick={handleLogout}
-                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
-                  role="menuitem"
-                >
-                  <FiLogOut className="inline mr-2" /> Disconnect
-                </button>
-              </div>
-            </div>
-          )}
-        </>
+
+                <div className="divide-y divide-blue-100">
+                  {displayAddress && (
+                    <button
+                      onClick={handleCopyAddress}
+                      className="w-full flex items-center justify-between 
+                        px-4 py-3 text-sm text-gray-700 
+                        hover:bg-blue-50 transition-colors 
+                        group relative"
+                    >
+                      <div className="flex items-center">
+                        {copiedAddress ? (
+                          <CheckIcon className="mr-2 size-5 text-green-500" />
+                        ) : (
+                          <FiCopy className="mr-2 size-5 text-blue-500" />
+                        )}
+                        {copiedAddress ? "Copied!" : "Copy Address"}
+                      </div>
+                    </button>
+                  )}
+
+                  <button
+                    onClick={handleLogout}
+                    className="w-full flex items-center justify-between 
+                      px-4 py-3 text-sm text-red-600 
+                      hover:bg-red-50 transition-colors 
+                      group relative"
+                  >
+                    <div className="flex items-center">
+                      <FiLogOut className="mr-2 size-5" />
+                      Logout
+                    </div>
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       )}
     </div>
   );
