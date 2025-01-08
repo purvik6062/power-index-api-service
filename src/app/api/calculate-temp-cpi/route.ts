@@ -96,7 +96,7 @@ const dateRanges: DateRange[] = [
   },
   {
     start_date: "2024-10-22",
-    end_date: "2024-12-31",
+    end_date: "2025-01-31",
     HCC: new Set([
       "th_vp",
       "ch_vp_r6",
@@ -246,30 +246,46 @@ function calculateCPI(
     return 0;
   }
 
+  const parseVotingPower = (value: any): number => {
+    // Handle undefined, null, or invalid values
+    if (value === undefined || value === null) return 0;
+    
+    // Convert to string and clean any potential invalid characters
+    const strValue = value.toString().trim();
+    if (!strValue) return 0;
+    
+    // Parse the value and handle NaN
+    const parsed = parseFloat(strValue);
+    if (isNaN(parsed)) return 0;
+    
+    // Return with fixed precision
+    return Number(parsed.toFixed(10));
+  };
+
   return data.reduce((sum, delegate) => {
-    const parseVotingPower = (value: any): number => {
-      if (typeof value === "undefined" || value === null) return 0;
-      // Convert to string first to handle both number and string inputs
-      const strValue = value.toString();
-      // Parse with high precision
-      return parseFloat(parseFloat(strValue).toFixed(10));
-    };
+    // Ensure delegate and voting_power exist
+    if (!delegate || !delegate.voting_power) {
+      return sum;
+    }
 
     let influence = 0;
     for (const council of activeCouncils) {
-      const votingPower =
-        delegate.voting_power && delegate.voting_power[council] !== undefined
-          ? parseVotingPower(delegate.voting_power[council])
-          : 0;
+      // Safe access to voting power
+      const votingPower = parseVotingPower(
+        delegate.voting_power?.[council]
+      );
 
-      const percentage =
-        redistributedPercentages[
-          councilMappings.find((m) => m.keys.includes(council))?.displayName ||
-            ""
-        ];
-      influence += (votingPower * (percentage || 0)) / 100;
+      // Find council mapping and get percentage safely
+      const councilMapping = councilMappings.find(m => m.keys.includes(council));
+      const displayName = councilMapping?.displayName || "";
+      const percentage = redistributedPercentages[displayName] || 0;
+
+      // Calculate influence with safe values
+      influence += (votingPower * percentage) / 100;
     }
-    return sum + Math.pow(influence, 2);
+
+    // Ensure influence is a valid number before squaring
+    return sum + (isNaN(influence) ? 0 : Math.pow(influence, 2));
   }, 0);
 }
 
@@ -627,7 +643,7 @@ export async function GET(request: NextRequest) {
         );
 
         const dateString = new Date(date).toISOString().split("T")[0];
-        await exportDataToCsv(originalData, updatedData, dateString);
+        // await exportDataToCsv(originalData, updatedData, dateString);
         return {
           date: dateString,
           cpi,
