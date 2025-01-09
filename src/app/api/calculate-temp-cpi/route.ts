@@ -249,15 +249,15 @@ function calculateCPI(
   const parseVotingPower = (value: any): number => {
     // Handle undefined, null, or invalid values
     if (value === undefined || value === null) return 0;
-    
+
     // Convert to string and clean any potential invalid characters
     const strValue = value.toString().trim();
     if (!strValue) return 0;
-    
+
     // Parse the value and handle NaN
     const parsed = parseFloat(strValue);
     if (isNaN(parsed)) return 0;
-    
+
     // Return with fixed precision
     return Number(parsed.toFixed(10));
   };
@@ -442,19 +442,49 @@ const FETCH_VOTE = gql`
     }
   }
 `;
-const fetchVotingPower = async (addresses: any) => {
-  const results = await Promise.all(
-    addresses.map(async (address: any) => {
-      const response = await op_client
-        .query(FETCH_VOTE, { delegate: address })
-        .toPromise();
+async function fetchVotingPower(db:any,addresses: string[]) {
+  try {
+    // Convert addresses to lowercase for case-insensitive comparison
+    const normalizedAddresses = addresses?.map(addr => addr?.toLowerCase());
 
-      // Extract and return newBalance or default to '0' if no result is found
-      return response?.data?.delegateVotesChangeds[0]?.newBalance || "0";
-    })
-  );
-  return results;
-};
+    // Fetch voting power for all addresses
+    const results = await db.collection('delegate_data').aggregate([
+      {
+        $match: {
+          delegate_id: {
+            $in: normalizedAddresses
+          }
+        }
+      },
+      {
+        $sort: {
+          date: -1
+        }
+      },
+      {
+        $group: {
+          _id: "$delegate_id",
+          voting_power: { $first: "$voting_power.vp" }
+        }
+      }
+    ]).toArray();
+
+    // Create a map for quick lookup
+    const votingPowerMap = results.reduce((acc:any, record:any) => {
+      acc[record._id] = record.voting_power;
+      return acc;
+    }, {} as { [key: string]: number });
+
+    // Return results in the same order as input addresses
+    return normalizedAddresses.map(address =>
+      votingPowerMap[address] || 0
+    );
+
+  } catch (error) {
+    console.error('Error fetching voting power:', error);
+    return addresses.map(() => 0);
+  } 
+}
 export async function GET(request: NextRequest) {
   const keyData = await apiKeyMiddleware(request);
   console.log("keyData::::---", keyData);
@@ -500,18 +530,6 @@ export async function GET(request: NextRequest) {
     console.log("fromAddress not found");
   }
   // console.log('fromAddress:',fromAddress);
-  const addresses = [fromAddress, toAddress];
-  let votingPowersGlobal: any[] = []; // Declare a variable outside the function
-
-  await fetchVotingPower(addresses).then((votingPowers) => {
-    votingPowersGlobal = votingPowers.map((vp: string) =>
-      (Number(vp) / 10 ** 18).toString()
-    ); // Assign the result to the global variable
-    console.log("Voting Powers:", votingPowers);
-  });
-  votingPowersGlobal = [...votingPowersGlobal, balance];
-
-  console.log("votingPowersGlobal::::", votingPowersGlobal);
   let client;
   try {
     const percentages = {
@@ -526,6 +544,14 @@ export async function GET(request: NextRequest) {
 
     client = await connectDB();
     const db = client.db();
+  const addresses = [fromAddress, toAddress];
+  let votingPowersGlobal: any[] = []; // Declare a variable outside the function
+  await fetchVotingPower(db,addresses).then((votingPowers) => {
+    votingPowersGlobal = votingPowers.map((vp: string) =>
+      (Number(vp)).toString()
+    ); // Assign the result to the global variable
+  });
+  votingPowersGlobal = [...votingPowersGlobal, balance];
 
     const dates = await getUniqueDates(db);
 
@@ -544,8 +570,8 @@ export async function GET(request: NextRequest) {
             address: fromAddress?.toLowerCase(), // From address
             newVotingPower: fromAddress
               ? (
-                  Number(votingPowersGlobal[0]) - Number(votingPowersGlobal[2])
-                ).toString()
+                Number(votingPowersGlobal[0]) - Number(votingPowersGlobal[2])
+              ).toString()
               : "0", // New voting power
           },
           {
@@ -580,24 +606,24 @@ export async function GET(request: NextRequest) {
           }
           return delegate;
         });
-                // Add missing addresses from addressesToUpdate
-                addressesToUpdate.forEach((addressToUpdate) => {
-                  if (!addressToUpdate.address) return; // Skip if address is undefined
-                  const exists = data.some(
-                    (delegate:any) => 
-                      delegate.delegate_id.toLowerCase() === addressToUpdate.address.toLowerCase()
-                  );
-      
-                  if (!exists) {
-                    data.push({
-                      delegate_id: addressToUpdate.address,
-                      voting_power: {
-                        vp: addressToUpdate.newVotingPower,
-                        th_vp: "0", // Default value for threshold voting power
-                      }
-                    });
-                  }
-                });
+        // Add missing addresses from addressesToUpdate
+        addressesToUpdate.forEach((addressToUpdate) => {
+          if (!addressToUpdate.address) return; // Skip if address is undefined
+          const exists = data.some(
+            (delegate: any) =>
+              delegate.delegate_id.toLowerCase() === addressToUpdate.address.toLowerCase()
+          );
+
+          if (!exists) {
+            data.push({
+              delegate_id: addressToUpdate.address,
+              voting_power: {
+                vp: addressToUpdate.newVotingPower,
+                th_vp: "0", // Default value for threshold voting power
+              }
+            });
+          }
+        });
         //   console.log('data:', data);
         // Recalculate total voting power after updates
         const totalVotingPower = data.reduce((sum: number, delegate: any) => {
