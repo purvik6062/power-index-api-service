@@ -60,10 +60,9 @@ function APIAndDocumentation() {
               <div className="mt-6">
                 <h3 className="text-xl font-semibold mb-2">Need Help?</h3>
                 <p>
-                  If you have any questions or need assistance, please
-                  don&apos;t hesitate to{" "}
-                  <a href="#" className="text-primary hover:underline">
-                    contact our support team
+                If you have any questions or need assistance, please don&apos;t hesitate to contact our support team at {" "}
+                  <a href="https://discord.com/users/743442448868573255" className="text-primary underline" target="_blank" >
+                    @chain_l
                   </a>
                   .
                 </p>
@@ -72,6 +71,28 @@ function APIAndDocumentation() {
           </aside>
         </div>
       </Tabs>
+      <footer className="mt-auto py-6 ">
+        <div className="container mx-auto px-6 text-center text-sm text-primary">
+          Made with ❤️ by{" "}
+          <a 
+            href="https://lampros.tech" 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className="text-muted-foreground hover:underline"
+          >
+            Lampros Tech
+          </a>
+          . Generously supported by{" "}
+          <a 
+            href="https://gov.optimism.io" 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className="text-muted-foreground hover:underline"
+          >
+            Optimism
+          </a>
+        </div>
+      </footer>
     </div>
   );
 }

@@ -26,7 +26,9 @@ export async function GET(request: NextRequest) {
       
       const result = await collection.findOne({
         date: queryDate
-      });
+      },
+      { projection: { _id: 0 } }
+    );
 
       if (!result) {
         return NextResponse.json(
@@ -38,7 +40,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(result);
     } else {
       // If no date specified, return all records
-      const results = await collection.find({}).sort({ date: -1 }).toArray();
+      const results = await collection.find({},  { projection: { _id: 0 } }
+      ).sort({ date: -1 }).toArray();
       return NextResponse.json(results);
     }
   } catch (error) {

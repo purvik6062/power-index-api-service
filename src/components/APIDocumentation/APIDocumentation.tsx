@@ -20,7 +20,7 @@ function APIDocumentation() {
   const apiDocumentation = [
     {
       name: "Get Calculated Concentration Power Index (CPI) Value",
-      endpoint: "/api/calculate-cpi",
+      endpoint: "https://docs.daocpi.com/api/calculate-cpi",
       method: "GET",
       description: "Retrieve calculated CPI values for different dates.",
       authRequired: true,
@@ -66,7 +66,7 @@ function APIDocumentation() {
     },
     {
       name: "Temporary Concentration Power Index (CPI) Calculator",
-      endpoint: "/api/calculate-temp-cpi",
+      endpoint: "https://docs.daocpi.com/api/calculate-temp-cpi",
       method: "GET",
       description:
         "Calculate the Temporary Concentration Power Index (CPI) for a given delegator and destination address. This API helps analyze the performance and efficiency of blockchain delegations by taking into account Temporary-based Concentration factors.",
@@ -142,7 +142,7 @@ function APIDocumentation() {
     },
     {
       name: "Historic Concentration Power Index (CPI)",
-      endpoint: "/api/historic-cpi",
+      endpoint: "https://docs.daocpi.com/api/historic-cpi",
       method: "GET",
       description: "Contains CPI data for all recorded years, showing changes over time.",
       authRequired: true,
@@ -184,7 +184,7 @@ function APIDocumentation() {
     },
     {
       name: "Historic Concentration Power Index (CPI) Data for a Specific Date",
-      endpoint: "/api/historic-cpi?date=yyyy-mm-dd",
+      endpoint: "https://docs.daocpi.com/api/historic-cpi?date=yyyy-mm-dd",
       method: "GET",
       description: "Provides CPI data for a chosen date.",
       parameters: [

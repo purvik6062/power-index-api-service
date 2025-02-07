@@ -10,6 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Copy, Check } from "lucide-react";
 
 interface Parameter {
   name: string;
@@ -37,7 +38,17 @@ interface APIEndpoint {
 
 export function APIEndpoint({ api }: { api: APIEndpoint }) {
   const [isOpen, setIsOpen] = React.useState(false);
+  const [copied, setCopied] = React.useState(false);
 
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(api.endpoint);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error("Failed to copy text: ", err);
+    }
+  };
   return (
     <Collapsible
       open={isOpen}
@@ -75,6 +86,18 @@ export function APIEndpoint({ api }: { api: APIEndpoint }) {
               <div className="mt-4 space-y-4">
                 <p>
                   <strong>Endpoint:</strong> {api.endpoint}
+
+                  <button
+                    onClick={handleCopy}
+                    className="p-2 mx-3 bg-secondary rounded-md transition-colors"
+                    title={copied ? "Copied!" : "Copy endpoint"}
+                  >
+                    {copied ? (
+                      <Check className="h-4 w-4 text-green-500" />
+                    ) : (
+                      <Copy className="h-4 w-4 text-muted-foreground" />
+                    )}
+                  </button>
                 </p>
                 <p>
                   <strong>Description:</strong> {api.description}
@@ -110,8 +133,8 @@ export function APIEndpoint({ api }: { api: APIEndpoint }) {
                             status.code < 300
                               ? "success"
                               : status.code < 400
-                              ? "warning"
-                              : "destructive"
+                                ? "warning"
+                                : "destructive"
                           }
                         >
                           {status.code}
