@@ -1,8 +1,15 @@
 import { connectDB } from "@/lib/db/cpimongo";
 import { NextRequest,NextResponse } from 'next/server';
+import { apiKeyMiddleware } from "@/middleware/apiKeymiddleware";
 
 // GET handler
 export async function GET(request: NextRequest) {
+    const keyData = await apiKeyMiddleware(request);
+    // If middleware returned a response, it means there was an error
+    if (keyData instanceof NextResponse) {
+      return keyData;
+    }
+  
   let client;
   try {
     // Get the date from searchParams
