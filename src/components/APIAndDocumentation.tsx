@@ -6,12 +6,18 @@ import APIDocumentation from "./APIDocumentation/APIDocumentation";
 import { motion } from "framer-motion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import MobileResponsiveMessage from "./ui/MobileScreenPage";
 
 function APIAndDocumentation() {
   const [activeTab, setActiveTab] = useState("documentation");
 
   return (
-    <div className="container mx-auto p-6 max-w-7xl">
+    <>
+     {/*  For small screen */}
+    <MobileResponsiveMessage/>
+
+   
+    <div className="hidden lg:block container mx-auto p-6 max-w-7xl">
       <motion.h1
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -94,6 +100,7 @@ function APIAndDocumentation() {
         </div>
       </footer>
     </div>
+    </>
   );
 }
 

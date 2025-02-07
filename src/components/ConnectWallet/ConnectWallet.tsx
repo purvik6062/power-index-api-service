@@ -124,13 +124,13 @@ export function ConnectWallet() {
           onClick={handleLogin}
           className="flex items-center justify-center 
             bg-gradient-to-br from-blue-500 to-[#4e72b1]
-            text-white px-6 py-3 rounded-full 
+            text-white p-3 sm:px-6 sm:py-3 rounded-full 
             shadow-lg hover:shadow-xl 
             transition-all duration-300 
             group relative overflow-hidden"
         >
-          <BiSolidWallet className="mr-2 size-5 group-hover:rotate-12 transition-transform" />
-          <span className="font-semibold">Connect Wallet</span>
+          <BiSolidWallet className="sm:mr-2 size-5 group-hover:rotate-12 transition-transform" />
+          <span className="hidden sm:block font-semibold">Connect Wallet</span>
           <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
         </motion.button>
       ) : (
