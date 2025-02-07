@@ -187,6 +187,16 @@ function APIDocumentation() {
       endpoint: "/api/historic-cpi?date=yyyy-mm-dd",
       method: "GET",
       description: "Provides CPI data for a chosen date.",
+      parameters: [
+        {
+          name: "Date",
+          type: "string",
+          required: true,
+          description: "Date in the format 'yyyy-mm-dd'",
+        }
+      ],
+      exampleUrl:
+        "https://api.daocpi.com/api/historic-cpi?date={{date}}",
       authRequired: true,
       responseStatuses: [
         { code: 200, description: "Successful response with historic CPI data" },
