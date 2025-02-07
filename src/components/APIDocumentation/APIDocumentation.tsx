@@ -140,6 +140,70 @@ function APIDocumentation() {
         ],
       },
     },
+    {
+      name: "Historic Concentration Power Index (CPI)",
+      endpoint: "/api/historic-cpi",
+      method: "GET",
+      description: "Contains CPI data for all recorded years, showing changes over time.",
+      authRequired: true,
+      responseStatuses: [
+        { code: 200, description: "Successful response with historic CPI data" },
+        { code: 400, description: "Bad request - Invalid parameters" },
+        { code: 401, description: "Unauthorized - Invalid or missing API key" },
+        { code: 500, description: "Internal server error" },
+      ],
+      responseExample: {
+        results:[
+          {
+            "date": "2024-11-30T00:00:00.000Z",
+            "HHI": 220.72,
+            "CPI": 67.85
+          },
+          {
+            "date": "2024-11-29T00:00:00.000Z",
+            "HHI": 218.82,
+            "CPI": 67.7
+          },
+          {
+            "date": "2024-11-28T00:00:00.000Z",
+            "HHI": 218.68,
+            "CPI": 67.68
+          },
+          {
+            "date": "2024-11-27T00:00:00.000Z",
+            "HHI": 220.95,
+            "CPI": 67.86
+          },
+          {
+            "date": "2024-11-26T00:00:00.000Z",
+            "HHI": 220.95,
+            "CPI": 67.87
+          }
+        ]
+      },
+    },
+    {
+      name: "Historic Concentration Power Index (CPI) Data for a Specific Date",
+      endpoint: "/api/historic-cpi?date=yyyy-mm-dd",
+      method: "GET",
+      description: "Provides CPI data for a chosen date.",
+      authRequired: true,
+      responseStatuses: [
+        { code: 200, description: "Successful response with historic CPI data" },
+        { code: 400, description: "Bad request - Invalid parameters" },
+        { code: 401, description: "Unauthorized - Invalid or missing API key" },
+        { code: 500, description: "Internal server error" },
+      ],
+      responseExample: {
+        results:[
+          {
+            "date": "2024-11-30T00:00:00.000Z",
+            "HHI": 220.72,
+            "CPI": 67.85
+          },
+        ]
+      },
+    }
   ];
 
   return (
