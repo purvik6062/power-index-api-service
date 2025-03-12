@@ -96,7 +96,7 @@ const dateRanges: DateRange[] = [
   },
   {
     start_date: "2024-10-22",
-    end_date: "2025-02-28",
+    end_date: "2025-01-15",
     HCC: new Set([
       "th_vp",
       "ch_vp_r6",
@@ -105,6 +105,19 @@ const dateRanges: DateRange[] = [
       "sc_vp_s6",
       "coc_vp_s6",
       "dab_vp_s6",
+    ]),
+  },
+  {
+    start_date: "2025-01-16",
+    end_date: "2025-06-11",
+    HCC: new Set([
+      "th_vp",
+      "ch_vp_r6",
+      "gc_vp_s7",
+      "gc_vp_op_s7",
+      "sc_vp_s7",
+      "dab_vp_s7",
+      "mmc_vp_s7"
     ]),
   },
 ];
@@ -125,15 +138,19 @@ const councilMappings: CouncilMapping[] = [
   },
   {
     displayName: "Grants Council",
-    keys: ["gc_vp_s3", "gc_vp_s4", "gc_vp_s5", "gc_vp_s6"],
+    keys: ["gc_vp_s3", "gc_vp_s4", "gc_vp_s5", "gc_vp_s6", "gc_vp_s7"],
   },
   {
     displayName: "Grants Council (Milestone & Metrics Sub-committee)",
     keys: ["gc_vp_mm_s5", "gc_vp_mm_s6"],
   },
   {
+    displayName: "Grants Council (Operations Sub-committee)",
+    keys: ["gc_vp_op_s7"],
+  },
+  {
     displayName: "Security Council",
-    keys: ["sc_vp_s5", "sc_vp_s6"],
+    keys: ["sc_vp_s5", "sc_vp_s6", "sc_vp_s7"],
   },
   {
     displayName: "Code of Conduct Council",
@@ -141,8 +158,12 @@ const councilMappings: CouncilMapping[] = [
   },
   {
     displayName: "Developer Advisory Board",
-    keys: ["dab_vp_s5", "dab_vp_s6"],
+    keys: ["dab_vp_s5", "dab_vp_s6", "dab_vp_s7"],
   },
+  {
+    displayName: "Milestone & Metrics Council",
+    keys: ["mmc_vp_s7"],
+  }
 ];
 
 async function exportDataToCsv(data: any[], updatedData: any[], date: string) {
@@ -369,7 +390,7 @@ class SimpleCache<T> {
 }
 
 const cache = new SimpleCache<any>();
-const CACHE_DURATION = 60 * 60 * 1000; // 1 hour in milliseconds
+const CACHE_DURATION = 5 * 60 * 1000; // 1 hour in milliseconds
 
 async function getUniqueDates(db: any): Promise<Date[]> {
   const cachedDates = cache.get("uniqueDates");
@@ -532,7 +553,7 @@ export async function GET(request: NextRequest) {
   // console.log('fromAddress:',fromAddress);
   let client;
   try {
-    const percentages = {
+    const oldpercentages = {
       "Token House": 32.33,
       "Citizen House": 34.59,
       "Grants Council": 10.15,
@@ -540,6 +561,17 @@ export async function GET(request: NextRequest) {
       "Security Council": 12.78,
       "Code of Conduct Council": 4.32,
       "Developer Advisory Board": 3.01,
+    } as CouncilPercentages;
+
+    const percentages = {
+      "Token House": 33.73,
+      "Citizen House": 36.08,
+      "Grants Council": 10.59,
+      "Grants Council (Operations Sub-committee)": 0.19,
+      "Security Council": 13.33,
+      "Code of Conduct Council": 0.00,
+      "Developer Advisory Board": 3.14,
+      "Milestone & Metrics Council": 2.94
     } as CouncilPercentages;
 
     client = await connectDB();
