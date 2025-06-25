@@ -104,10 +104,10 @@ const dateRanges: DateRange[] = [
   },
   {
     start_date: "2025-01-16",
-    end_date: "2025-06-11",
+    end_date: "2025-07-23",
     HCC: new Set([
       "th_vp",
-      "ch_vp_r6",
+      "ch_vp_r7",
       "gc_vp_s7",
       "gc_vp_op_s7",
       "sc_vp_s7",
@@ -129,7 +129,7 @@ const councilMappings: CouncilMapping[] = [
   },
   {
     displayName: "Citizen House",
-    keys: ["ch_vp_r2", "ch_vp_r3", "ch_vp_r4", "ch_vp_r5", "ch_vp_r6"],
+    keys: ["ch_vp_r2", "ch_vp_r3", "ch_vp_r4", "ch_vp_r5", "ch_vp_r6","ch_vp_r7"],
   },
   {
     displayName: "Grants Council",
