@@ -109,7 +109,7 @@ const dateRanges: DateRange[] = [
   },
   {
     start_date: "2025-01-16",
-    end_date: "2025-07-23",
+    end_date: "2025-07-30",
     HCC: new Set([
       "th_vp",
       "ch_vp_r7",
@@ -118,6 +118,19 @@ const dateRanges: DateRange[] = [
       "sc_vp_s7",
       "dab_vp_s7",
       "mmc_vp_s7"
+    ]),
+  },
+  {
+    start_date: "2025-07-31",
+    end_date: "2025-12-24",
+    HCC: new Set([
+      "th_vp",
+      "ch_vp_r7",
+      "gc_vp_s8",
+      "gc_vp_op_s8",
+      "sc_vp_s8",
+      "dab_vp_s8",
+      "mmc_vp_s8"
     ]),
   },
 ];
@@ -134,11 +147,11 @@ const councilMappings: CouncilMapping[] = [
   },
   {
     displayName: "Citizen House",
-    keys: ["ch_vp_r2", "ch_vp_r3", "ch_vp_r4", "ch_vp_r5", "ch_vp_r6","ch_vp_r7"],
+    keys: ["ch_vp_r2", "ch_vp_r3", "ch_vp_r4", "ch_vp_r5", "ch_vp_r6", "ch_vp_r7"],
   },
   {
     displayName: "Grants Council",
-    keys: ["gc_vp_s3", "gc_vp_s4", "gc_vp_s5", "gc_vp_s6", "gc_vp_s7"],
+    keys: ["gc_vp_s3", "gc_vp_s4", "gc_vp_s5", "gc_vp_s6", "gc_vp_s7", "gc_vp_s8"],
   },
   {
     displayName: "Grants Council (Milestone & Metrics Sub-committee)",
@@ -146,11 +159,11 @@ const councilMappings: CouncilMapping[] = [
   },
   {
     displayName: "Grants Council (Operations Sub-committee)",
-    keys: ["gc_vp_op_s7"],
+    keys: ["gc_vp_op_s7", "gc_vp_op_s8"],
   },
   {
     displayName: "Security Council",
-    keys: ["sc_vp_s5", "sc_vp_s6", "sc_vp_s7"],
+    keys: ["sc_vp_s5", "sc_vp_s6", "sc_vp_s7", "sc_vp_s8"],
   },
   {
     displayName: "Code of Conduct Council",
@@ -158,11 +171,11 @@ const councilMappings: CouncilMapping[] = [
   },
   {
     displayName: "Developer Advisory Board",
-    keys: ["dab_vp_s5", "dab_vp_s6", "dab_vp_s7"],
+    keys: ["dab_vp_s5", "dab_vp_s6", "dab_vp_s7", "dab_vp_s8"],
   },
   {
     displayName: "Milestone & Metrics Council",
-    keys: ["mmc_vp_s7"],
+    keys: ["mmc_vp_s7", "mmc_vp_s8"],
   }
 ];
 
